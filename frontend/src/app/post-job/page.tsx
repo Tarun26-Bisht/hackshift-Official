@@ -10,13 +10,13 @@ import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/api';
 
 const JOB_WEIGHTS: Record<string, number> = {
-  title: 15, description: 20, salary: 12, duration: 10,
-  jobType: 8, location: 8, contactEmail: 10, link: 10, skills: 7,
+  title: 14, description: 18, salary: 10, duration: 10,
+  jobType: 8, location: 8, contactEmail: 8, link: 8, skills: 6, deadline: 10,
 };
 
 const initialForm = {
   title: '', description: '', salary: '', duration: '',
-  jobType: '', location: '', contactEmail: '', link: '', skills: '',
+  jobType: '', location: '', contactEmail: '', link: '', skills: '', deadline: '',
 };
 
 function calcCompleteness(form: typeof initialForm) {
@@ -38,6 +38,16 @@ export default function PostJobPage() {
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
 
   const completeness = useMemo(() => calcCompleteness(form), [form]);
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const setPresetDeadline = (days: number) => {
+    const target = new Date();
+    target.setDate(target.getDate() + days);
+    const dateStr = target.toISOString().split('T')[0];
+    setForm(prev => ({ ...prev, deadline: dateStr }));
+    setIncompleteFields(prev => prev.filter(f => f !== 'deadline'));
+  };
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'recruiter')) router.replace('/login');
@@ -144,6 +154,64 @@ export default function PostJobPage() {
             <Field label="Skills Required *" name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Python, React, Communication" highlight={incompleteFields.includes('skills')} />
             <Field label="Contact Email *" name="contactEmail" value={form.contactEmail} onChange={handleChange} type="email" placeholder="hr@company.com" highlight={incompleteFields.includes('contactEmail')} />
             <Field label="Apply / Job Link *" name="link" value={form.link} onChange={handleChange} type="url" placeholder="https://company.com/apply" highlight={incompleteFields.includes('link')} />
+
+            {/* Application Deadline Section */}
+            <div className={`p-4 rounded-xl border ${incompleteFields.includes('deadline') ? 'bg-orange-50/60 border-orange-300' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                <div>
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                    <span>📅 Application Deadline (Last Date to Apply) *</span>
+                    {form.deadline && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                        {form.deadline}
+                      </span>
+                    )}
+                  </label>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Students will see a dynamic 5-day countdown badge and prioritized top ranking when the deadline nears.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                <input
+                  type="date"
+                  name="deadline"
+                  min={todayStr}
+                  value={form.deadline}
+                  onChange={handleChange}
+                  className={`border rounded-lg px-3.5 py-2 text-sm text-gray-900 font-medium bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    incompleteFields.includes('deadline') ? 'border-orange-400' : 'border-gray-300'
+                  }`}
+                />
+
+                {/* 1-Click Quick Preset Buttons */}
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  <span className="text-xs font-medium text-gray-500 mr-1">Quick Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => setPresetDeadline(7)}
+                    className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-gray-700 hover:text-blue-700 transition-colors shadow-2xs"
+                  >
+                    ⚡ 7 Days
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPresetDeadline(15)}
+                    className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-gray-700 hover:text-blue-700 transition-colors shadow-2xs"
+                  >
+                    📅 15 Days
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPresetDeadline(30)}
+                    className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-gray-700 hover:text-blue-700 transition-colors shadow-2xs"
+                  >
+                    📅 30 Days
+                  </button>
+                </div>
+              </div>
+            </div>
 
             <button type="submit" disabled={submitting || completeness < 90}
               className="bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">

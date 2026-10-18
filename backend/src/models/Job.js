@@ -16,6 +16,8 @@ const jobSchema = new mongoose.Schema({
   contactEmail: { type: String },
   link: { type: String },
   skills: { type: [String], default: [] },
+  deadline: { type: Date },
+  isExpired: { type: Boolean, default: false },
 
   // Audit results
   trustScore: { type: Number, default: 0 },

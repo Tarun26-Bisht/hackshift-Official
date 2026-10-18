@@ -19,6 +19,8 @@ export default function Home() {
   const [selectedType, setSelectedType] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [minTrustScore, setMinTrustScore] = useState<number | ''>('');
+  const [sortBy, setSortBy] = useState('closing_soon');
+  const [urgentOnly, setUrgentOnly] = useState(false);
 
   const popularSkills = ['React', 'Python', 'Node.js', 'TypeScript', 'AI/ML', 'Next.js', 'Tailwind', 'SQL'];
   const jobTypes = ['Government Internship', 'Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'];
@@ -34,6 +36,8 @@ export default function Home() {
     if (selectedType) params.append('jobType', selectedType);
     if (selectedLocation) params.append('location', selectedLocation);
     if (minTrustScore) params.append('minScore', String(minTrustScore));
+    if (sortBy) params.append('sortBy', sortBy);
+    if (urgentOnly) params.append('urgentOnly', 'true');
 
     fetch(`${API_URL}/api/jobs/listings?${params}`)
       .then(res => res.json())
@@ -57,7 +61,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchListings();
-  }, [page, selectedSkill, selectedType, selectedLocation, minTrustScore]);
+  }, [page, selectedSkill, selectedType, selectedLocation, minTrustScore, sortBy, urgentOnly]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,10 +75,12 @@ export default function Home() {
     setSelectedType('');
     setSelectedLocation('');
     setMinTrustScore('');
+    setSortBy('closing_soon');
+    setUrgentOnly(false);
     setPage(1);
   };
 
-  const hasActiveFilters = Boolean(search || selectedSkill || selectedType || selectedLocation || minTrustScore);
+  const hasActiveFilters = Boolean(search || selectedSkill || selectedType || selectedLocation || minTrustScore || urgentOnly || sortBy !== 'closing_soon');
 
   return (
     <ErrorBoundary>
@@ -249,6 +255,11 @@ export default function Home() {
                         Score ≥ {minTrustScore}
                       </span>
                     )}
+                    {urgentOnly && (
+                      <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                        🔥 Expiring in 5 Days
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={resetFilters}
@@ -264,18 +275,59 @@ export default function Home() {
 
         {/* Listings Section */}
         <section className="max-w-6xl mx-auto px-4 py-10 flex-1 w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Verified Openings
-              <span className="ml-2 text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full">
-                {totalListings} available
-              </span>
-            </h2>
-            {totalPages > 1 && (
-              <span className="text-xs text-gray-500">
-                Page {page} of {totalPages}
-              </span>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span>Verified Openings</span>
+                <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full">
+                  {totalListings} available
+                </span>
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {sortBy === 'closing_soon'
+                  ? '🔥 Urgent countdowns (1–5 days left) prioritized at the top'
+                  : sortBy === 'trustScore'
+                  ? '🛡️ Ranked by highest AI TrustScore'
+                  : '✨ Newest verified listings first'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Urgent Filter Toggle Button */}
+              <button
+                type="button"
+                onClick={() => { setUrgentOnly(!urgentOnly); setPage(1); }}
+                className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 shadow-2xs ${
+                  urgentOnly
+                    ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-400'
+                    : 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
+                }`}
+              >
+                <span>🔥</span>
+                <span>Expiring in 5 Days</span>
+                {urgentOnly && <span className="ml-0.5 font-black">✕</span>}
+              </button>
+
+              {/* Sort Selector Dropdown */}
+              <div className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-2.5 py-1 shadow-2xs">
+                <label className="text-xs font-semibold text-gray-500">Sort:</label>
+                <select
+                  value={sortBy}
+                  onChange={e => { setSortBy(e.target.value); setPage(1); }}
+                  className="bg-transparent text-xs font-bold text-gray-800 focus:outline-none cursor-pointer"
+                >
+                  <option value="closing_soon">🔥 Closing Soonest (1-5 Days First)</option>
+                  <option value="trustScore">🛡️ Highest Trust Score</option>
+                  <option value="recent">✨ Newest First</option>
+                </select>
+              </div>
+
+              {totalPages > 1 && (
+                <span className="text-xs text-gray-400 ml-1 hidden sm:inline">
+                  Page {page}/{totalPages}
+                </span>
+              )}
+            </div>
           </div>
 
           {loading ? (
