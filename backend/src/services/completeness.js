@@ -32,15 +32,16 @@ const PROFILE_WEIGHTS = {
  * Job listing field weights — total = 100
  */
 const JOB_WEIGHTS = {
-  title: 15,
-  description: 20,
-  salary: 12,
+  title: 14,
+  description: 18,
+  salary: 10,
   duration: 10,
   jobType: 8,
   location: 8,
-  contactEmail: 10,
-  link: 10,
-  skills: 7,
+  contactEmail: 8,
+  link: 8,
+  skills: 6,
+  deadline: 10,
 };
 
 function calculateProfileCompleteness(profile) {
@@ -63,6 +64,8 @@ function calculateJobCompleteness(jobData) {
     if (field === 'skills') {
       if (Array.isArray(val) && val.length > 0) score += weight;
       else if (typeof val === 'string' && val.trim()) score += weight;
+    } else if (field === 'deadline') {
+      if (val && !isNaN(new Date(val).getTime())) score += weight;
     } else if (val && String(val).trim()) {
       score += weight;
     }

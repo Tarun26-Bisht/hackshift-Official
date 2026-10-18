@@ -30,15 +30,21 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     if (!token) return;
-    Promise.all([
-      fetch(`${API_URL}/api/student/me`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${API_URL}/api/jobs/listings`).then(r => r.json()),
-    ]).then(([studentData, jobsData]) => {
-      setProfile(studentData?.profile || null);
-      setMissingFields(studentData?.missingFields || []);
-      setJobs(Array.isArray(jobsData) ? jobsData : (jobsData?.jobs || []));
-      setFetching(false);
-    }).catch(() => setFetching(false));
+    fetch(`${API_URL}/api/student/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(studentData => {
+        const p = studentData?.profile || null;
+        setProfile(p);
+        setMissingFields(studentData?.missingFields || []);
+        const courseParam = p?.course ? `&course=${encodeURIComponent(p.course)}` : '';
+        return fetch(`${API_URL}/api/jobs/listings?sortBy=closing_soon${courseParam}`);
+      })
+      .then(r => r.json())
+      .then(jobsData => {
+        setJobs(Array.isArray(jobsData) ? jobsData : (jobsData?.jobs || []));
+        setFetching(false);
+      })
+      .catch(() => setFetching(false));
   }, [token]);
 
   if (loading || !user) {
@@ -144,6 +150,43 @@ export default function StudentDashboard() {
               <p className="text-gray-500 text-xs mt-1">Top demanded skills in verified listings</p>
             </Link>
           </div>
+
+          {/* Urgent Deadlines Section */}
+          {!fetching && jobs.filter(j => typeof j.daysLeft === 'number' && j.daysLeft >= 0 && j.daysLeft <= 5).length > 0 && (
+            <div className="mb-10 bg-gradient-to-r from-red-50/80 via-amber-50/70 to-orange-50/60 border border-amber-200 rounded-2xl p-6 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">⏰</span>
+                    <h2 className="text-lg font-black text-gray-900">
+                      Urgent Deadlines {profile?.course ? `for ${profile.course} Students` : ''}
+                    </h2>
+                    <span className="bg-red-600 text-white text-[11px] font-black px-2 py-0.5 rounded-full animate-pulse">
+                      {jobs.filter(j => typeof j.daysLeft === 'number' && j.daysLeft >= 0 && j.daysLeft <= 5).length} Closing Soon
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    These openings close within 5 days! 1-day left roles are prioritized first so you never miss an application.
+                  </p>
+                </div>
+                <Link
+                  href="/?sortBy=closing_soon"
+                  className="text-xs font-bold text-red-700 hover:text-red-800 underline self-start sm:self-auto"
+                >
+                  View All Urgent Deadlines →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {jobs
+                  .filter(j => typeof j.daysLeft === 'number' && j.daysLeft >= 0 && j.daysLeft <= 5)
+                  .slice(0, 3)
+                  .map(job => (
+                    <JobCard key={`urgent-${job._id || job.id}`} job={job} />
+                  ))}
+              </div>
+            </div>
+          )}
 
           {/* Job Listings */}
           <div className="flex items-center justify-between mb-4">

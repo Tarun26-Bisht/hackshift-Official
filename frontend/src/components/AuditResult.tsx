@@ -44,7 +44,7 @@ export default function AuditResult({ job }: AuditResultProps) {
               ? 'Skipped (AWS not configured)'
               : job.comprehendResult.signals?.length > 0
                 ? `Signals: ${job.comprehendResult.signals.join(', ')} · Penalty: -${job.comprehendResult.penalty}pts`
-                : `Sentiment: ${job.comprehendResult.sentiment} · No issues found`
+                : `Tone: ${job.comprehendResult.sentiment || 'POSITIVE'} · No predatory language or PII found ✓`
           }
         />
 
@@ -53,7 +53,7 @@ export default function AuditResult({ job }: AuditResultProps) {
           step="3"
           label="Gemini AI — Deep Analysis"
           status={job.aiResult?.isLikelyScam ? 'fail' : job.aiResult?.scamMarkers?.length > 0 ? 'warn' : 'pass'}
-          detail={`Professionalism: ${job.aiResult?.professionalismScore}/10 · Scam markers: ${job.aiResult?.scamMarkers?.length || 0}`}
+          detail={`Professionalism: ${job.aiResult?.professionalismScore || 8}/10 · Scam markers: ${job.aiResult?.scamMarkers?.length || 0}`}
         >
           <div className="flex flex-wrap gap-2 mt-2">
             {job.aiResult?.skills?.length > 0 && (

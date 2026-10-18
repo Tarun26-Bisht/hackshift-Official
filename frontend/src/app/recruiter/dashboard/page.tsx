@@ -157,10 +157,29 @@ export default function RecruiterDashboard() {
                 <div key={job._id} className="bg-white rounded-xl border border-gray-100 p-5 flex items-center justify-between gap-4">
                   <div>
                     <p className="font-semibold text-gray-900">{job.title}</p>
-                    <p className="text-sm text-gray-400 mt-0.5">
-                      {new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      {job.auditCount > 1 && ` · Audit #${job.auditCount}`}
-                    </p>
+                    <div className="text-sm text-gray-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>{new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      {job.auditCount > 1 && <span>· Audit #{job.auditCount}</span>}
+                      {job.deadline && (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                          job.isExpired
+                            ? 'bg-gray-100 text-gray-600'
+                            : typeof job.daysLeft === 'number' && job.daysLeft <= 1
+                            ? 'bg-red-100 text-red-700 animate-pulse'
+                            : typeof job.daysLeft === 'number' && job.daysLeft <= 5
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-blue-50 text-blue-700'
+                        }`}>
+                          {job.isExpired
+                            ? '🚫 Expired'
+                            : typeof job.daysLeft === 'number' && job.daysLeft <= 1
+                            ? '🔥 Closes in 24h'
+                            : typeof job.daysLeft === 'number' && job.daysLeft <= 5
+                            ? `⏳ ${job.daysLeft} days left`
+                            : `📅 Deadline: ${new Date(job.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
+                        </span>
+                      )}
+                    </div>
                     {job.status === 'blocked' && job.blockReason && (
                       <p className="text-xs text-red-500 mt-1">🚫 {job.blockReason}</p>
                     )}

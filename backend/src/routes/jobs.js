@@ -27,10 +27,14 @@ router.post('/audit', recruiterGuard, async (req, res) => {
         error: 'Job listing is incomplete',
         jobCompleteness,
         message: `Your listing is ${jobCompleteness}% complete. Need 90% to submit.`,
-        missingHint: ['title', 'description', 'salary', 'duration', 'jobType', 'location', 'contactEmail', 'link']
+        missingHint: ['title', 'description', 'salary', 'duration', 'jobType', 'location', 'contactEmail', 'link', 'deadline']
           .filter(f => !jobData[f] || !String(jobData[f]).trim()),
       });
     }
+
+    const deadline = jobData.deadline
+      ? new Date(jobData.deadline)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const fullText = `${jobData.title} ${jobData.description}`;
 
@@ -42,6 +46,7 @@ router.post('/audit', recruiterGuard, async (req, res) => {
         recruiterName: req.user.name,
         companyName: req.user.companyName || jobData.company,
         ...jobData,
+        deadline,
         trustScore: 0,
         status: 'blocked',
         jobCompleteness,
@@ -95,6 +100,7 @@ router.post('/audit', recruiterGuard, async (req, res) => {
       recruiterName: req.user.name,
       companyName: companyProfile?.legalName || req.user.companyName || jobData.company,
       ...jobData,
+      deadline,
       skills,
       trustScore,
       status,
@@ -195,14 +201,74 @@ router.get('/government-internships', (req, res) => {
   }
 });
 
+function isRollingOrTextDeadline(str) {
+  if (!str) return true;
+  const s = String(str).toLowerCase().trim();
+  return (
+    s.includes('rolling') ||
+    s.includes('cycle') ||
+    s.includes('cohort') ||
+    s.includes('ongoing') ||
+    s.includes('open all year') ||
+    s.includes('active') ||
+    s.includes('calendar month')
+  );
+}
+
+function computeDeadlineMeta(deadline) {
+  if (!deadline || isRollingOrTextDeadline(deadline)) {
+    return { daysLeft: null, isClosingSoon: false, isExpired: false, urgencyTier: 4 };
+  }
+  const d = new Date(deadline);
+  if (isNaN(d.getTime())) {
+    return { daysLeft: null, isClosingSoon: false, isExpired: false, urgencyTier: 4 };
+  }
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (daysLeft < 0) {
+    return { daysLeft, isClosingSoon: false, isExpired: true, urgencyTier: 5 };
+  }
+  if (daysLeft <= 1) {
+    return { daysLeft, isClosingSoon: true, isExpired: false, urgencyTier: 1 };
+  }
+  if (daysLeft <= 5) {
+    return { daysLeft, isClosingSoon: true, isExpired: false, urgencyTier: 2 };
+  }
+  return { daysLeft, isClosingSoon: false, isExpired: false, urgencyTier: 3 };
+}
+
+function matchesCourse(job, course) {
+  if (!course) return false;
+  const c = String(course).toLowerCase();
+  const isTechCourse = c.includes('mca') || c.includes('btech') || c.includes('b.tech') || c.includes('cse') || c.includes('computer') || c.includes('information') || c.includes('it') || c.includes('bca') || c.includes('software');
+  const isBusinessCourse = c.includes('mba') || c.includes('bba') || c.includes('business') || c.includes('management') || c.includes('marketing') || c.includes('finance');
+
+  const text = `${job.title || ''} ${job.description || ''} ${(job.skills || []).join(' ')}`.toLowerCase();
+
+  if (isTechCourse) {
+    const techKeywords = ['developer', 'software', 'engineer', 'frontend', 'backend', 'fullstack', 'react', 'python', 'node', 'java', 'web', 'data', 'cloud', 'ai', 'ml', 'programming', 'technical'];
+    return techKeywords.some(k => text.includes(k));
+  }
+  if (isBusinessCourse) {
+    const bizKeywords = ['management', 'business', 'marketing', 'analyst', 'strategy', 'finance', 'consulting', 'operations', 'sales', 'hr'];
+    return bizKeywords.some(k => text.includes(k));
+  }
+  return false;
+}
+
 // ─── GET /listings (Search, Filter, Pagination + Govt Internships) ─────────────
 router.get('/listings', async (req, res) => {
   try {
-    const { search, skill, location, jobType, minScore, isGovernment, page, limit } = req.query;
+    const { search, skill, location, jobType, minScore, isGovernment, page, limit, sortBy, urgentOnly, course } = req.query;
 
     // Direct government internships request
     if (isGovernment === 'true' || jobType === 'government' || jobType === 'Government Internship') {
-      const govListings = getAllGovernmentInternships({ search, skill });
+      const govListings = getAllGovernmentInternships({ search, skill }).map(item => {
+        const meta = computeDeadlineMeta(item.deadline);
+        return { ...item, ...meta };
+      });
       return res.json(govListings);
     }
 
@@ -228,36 +294,95 @@ router.get('/listings', async (req, res) => {
       filter.trustScore = { $gte: Number(minScore) };
     }
 
-    const govInternships = getAllGovernmentInternships({ search, skill });
+    const dbJobs = await Job.find(filter).lean();
+    const govRaw = getAllGovernmentInternships({ search, skill });
+
+    // Decorate DB jobs with computed deadline metadata
+    const decoratedDbJobs = dbJobs.map(job => {
+      const meta = computeDeadlineMeta(job.deadline);
+      return { ...job, ...meta };
+    });
+
+    // Decorate Govt internships
+    const decoratedGov = govRaw.map(item => {
+      const meta = computeDeadlineMeta(item.deadline);
+      return { ...item, ...meta };
+    });
+
+    let allListings = !jobType ? [...decoratedGov, ...decoratedDbJobs] : decoratedDbJobs;
+
+    // Filter by urgentOnly (0 to 5 days left)
+    if (urgentOnly === 'true') {
+      allListings = allListings.filter(j => j.daysLeft !== null && j.daysLeft >= 0 && j.daysLeft <= 5);
+    }
+
+    // Sort listings
+    if (sortBy === 'closing_soon') {
+      allListings.sort((a, b) => {
+        // 1. Urgency tier: Tier 1 (0-1 day) -> Tier 2 (2-5 days) -> Tier 3 (>5 days) -> Tier 4 (rolling) -> Tier 5 (expired)
+        if (a.urgencyTier !== b.urgencyTier) {
+          return a.urgencyTier - b.urgencyTier;
+        }
+
+        // For Tier 1 and Tier 2 (Urgent countdowns: 1-day left top, 2-5 days next):
+        if (a.urgencyTier === 1 || a.urgencyTier === 2) {
+          // Degree matching boost for MCA / B.Tech / MBA
+          if (course) {
+            const matchA = matchesCourse(a, course);
+            const matchB = matchesCourse(b, course);
+            if (matchA && !matchB) return -1;
+            if (!matchA && matchB) return 1;
+          }
+          // Sort soonest closing first (1 day before 2 days, 2 days before 3 days, etc.)
+          return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
+        }
+
+        // Tier 3 (> 5 days left): soonest deadline first
+        if (a.urgencyTier === 3) {
+          return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
+        }
+
+        // Tier 4 (Govt / rolling): by trust score
+        if (a.urgencyTier === 4) {
+          return (b.trustScore || 0) - (a.trustScore || 0);
+        }
+
+        return 0;
+      });
+    } else if (sortBy === 'trustScore') {
+      allListings.sort((a, b) => (b.trustScore || 0) - (a.trustScore || 0));
+    } else if (sortBy === 'recent') {
+      allListings.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    } else {
+      // Default: Put urgent jobs (tier 1 & tier 2) at the top, then recent
+      allListings.sort((a, b) => {
+        const isAUrgent = a.urgencyTier <= 2;
+        const isBUrgent = b.urgencyTier <= 2;
+        if (isAUrgent && !isBUrgent) return -1;
+        if (!isAUrgent && isBUrgent) return 1;
+        if (isAUrgent && isBUrgent) {
+          if (a.urgencyTier !== b.urgencyTier) return a.urgencyTier - b.urgencyTier;
+          return (a.daysLeft ?? 999) - (b.daysLeft ?? 999);
+        }
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+    }
 
     if (page || limit) {
       const pageNum = Math.max(1, Number(page) || 1);
       const limitNum = Math.max(1, Number(limit) || 9);
-      const dbTotal = await Job.countDocuments(filter);
-      const total = dbTotal + govInternships.length;
-
-      const jobs = await Job.find(filter)
-        .sort({ createdAt: -1 })
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum);
-
-      // Include government internships on first page if not filtered out
-      const combined = pageNum === 1 && !jobType
-        ? [...govInternships.slice(0, 3), ...jobs]
-        : jobs;
+      const total = allListings.length;
+      const paginated = allListings.slice((pageNum - 1) * limitNum, pageNum * limitNum);
 
       return res.json({
-        jobs: combined,
+        jobs: paginated,
         total,
         page: pageNum,
         pages: Math.ceil(total / limitNum),
       });
     }
 
-    const jobs = await Job.find(filter).sort({ createdAt: -1 });
-    // Merge government listings at the top with company jobs
-    const combined = !jobType ? [...govInternships, ...jobs] : jobs;
-    res.json(combined);
+    res.json(allListings);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -266,8 +391,9 @@ router.get('/listings', async (req, res) => {
 // ─── GET /my-listings ─────────────────────────────────────────────────────────
 router.get('/my-listings', recruiterGuard, async (req, res) => {
   try {
-    const jobs = await Job.find({ recruiterId: req.user._id }).sort({ createdAt: -1 });
-    res.json(jobs);
+    const jobs = await Job.find({ recruiterId: req.user._id }).sort({ createdAt: -1 }).lean();
+    const decorated = jobs.map(j => ({ ...j, ...computeDeadlineMeta(j.deadline) }));
+    res.json(decorated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
