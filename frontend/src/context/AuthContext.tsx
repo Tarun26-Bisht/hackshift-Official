@@ -10,6 +10,8 @@ interface User {
   avatar?: string;
   companyName?: string;
   collegeName?: string;
+  course?: string;
+  yearOfStudy?: string;
   isVerified: boolean;
   isActive?: boolean;
 }

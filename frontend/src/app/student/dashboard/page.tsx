@@ -126,15 +126,22 @@ export default function StudentDashboard() {
             </Link>
           </div>
 
-          {/* Quick Links */}
-          <div className="grid grid-cols-2 gap-4 mb-10">
-            <Link href="/trends" className="bg-blue-600 text-white rounded-xl p-5 hover:bg-blue-700 transition-colors">
-              <p className="text-lg font-bold">📈 Skill Trends</p>
-              <p className="text-blue-100 text-sm mt-1">See what skills are in demand</p>
+          {/* Quick Links Banner */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            <Link href="/?jobType=Government+Internship" className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-5 hover:shadow-lg transition-all shadow-sm">
+              <span className="text-2xl mb-1 block">🇮🇳</span>
+              <p className="text-lg font-bold">Govt Free Internships</p>
+              <p className="text-orange-100 text-xs mt-1">PM Internship Scheme & AICTE (Stipend ₹5,000+)</p>
             </Link>
-            <Link href="/trends" className="bg-white border border-gray-100 rounded-xl p-5 hover:shadow-md transition-shadow">
-              <p className="text-lg font-bold text-gray-800">🎓 Free Courses</p>
-              <p className="text-gray-400 text-sm mt-1">Recommended based on trends</p>
+            <Link href="/student/courses" className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-xl p-5 hover:shadow-lg transition-all shadow-sm">
+              <span className="text-2xl mb-1 block">🎓</span>
+              <p className="text-lg font-bold">Free Courses Hub</p>
+              <p className="text-blue-100 text-xs mt-1">Swayam, NPTEL, freeCodeCamp (Student Exclusive)</p>
+            </Link>
+            <Link href="/trends" className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all shadow-sm">
+              <span className="text-2xl mb-1 block">📈</span>
+              <p className="text-lg font-bold text-gray-900">Skill Trends</p>
+              <p className="text-gray-500 text-xs mt-1">Top demanded skills in verified listings</p>
             </Link>
           </div>
 

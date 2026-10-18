@@ -119,12 +119,12 @@ export default function PostJobPage() {
 
           <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex flex-col gap-5">
             <Field label="Job Title *" name="title" value={form.title} onChange={handleChange} highlight={incompleteFields.includes('title')} />
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Description *</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-gray-800">Description *</label>
               <textarea name="description" value={form.description} onChange={handleChange} rows={5}
                 placeholder="Describe the role, responsibilities, requirements, and what the candidate will learn..."
-                className={`border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${incompleteFields.includes('description') ? 'border-orange-400' : 'border-gray-200'}`} />
-              <p className="text-xs text-gray-400">{form.description.length} chars — more detail = higher trust score</p>
+                className={`border rounded-lg px-3.5 py-2.5 text-sm text-gray-900 font-medium placeholder:text-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${incompleteFields.includes('description') ? 'border-orange-400 bg-orange-50' : 'border-gray-300'}`} />
+              <p className="text-xs text-gray-500 font-medium">{form.description.length} chars — more detail = higher trust score</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Salary / Stipend *" name="salary" value={form.salary} onChange={handleChange} placeholder="e.g. ₹15,000/month" highlight={incompleteFields.includes('salary')} />
@@ -171,10 +171,10 @@ export default function PostJobPage() {
 
 function Field({ label, name, value, onChange, required, type = 'text', placeholder, highlight }: any) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-semibold text-gray-800">{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-        className={`border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${highlight ? 'border-orange-400 bg-orange-50' : 'border-gray-200'}`} />
+        className={`border rounded-lg px-3.5 py-2.5 text-sm text-gray-900 font-medium placeholder:text-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${highlight ? 'border-orange-400 bg-orange-50' : 'border-gray-300'}`} />
     </div>
   );
 }

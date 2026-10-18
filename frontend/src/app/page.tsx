@@ -21,7 +21,7 @@ export default function Home() {
   const [minTrustScore, setMinTrustScore] = useState<number | ''>('');
 
   const popularSkills = ['React', 'Python', 'Node.js', 'TypeScript', 'AI/ML', 'Next.js', 'Tailwind', 'SQL'];
-  const jobTypes = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'];
+  const jobTypes = ['Government Internship', 'Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'];
 
   const fetchListings = () => {
     setLoading(true);
@@ -92,12 +92,50 @@ export default function Home() {
                 Trusted Careers for <span className="text-blue-600">Future Leaders</span>
               </h1>
               <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-                Zero fake jobs. Zero unpaid bait-and-switch scams. Every single posting undergoes multi-layer AI auditing, URL reachability verification, and recruiter identity vetting.
+                Zero fake jobs. Zero unpaid bait-and-switch scams. Verified central government schemes (PMIS, AICTE, MeitY) and recruiter-vetted industry jobs with transparent stipends.
               </p>
             </div>
 
+            {/* Quick Category Badges */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                onClick={() => { setSelectedType(''); setPage(1); }}
+                className={`text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all ${
+                  !selectedType ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                🔥 All Opportunities
+              </button>
+              <button
+                onClick={() => { setSelectedType('Government Internship'); setPage(1); }}
+                className={`text-xs px-3.5 py-1.5 rounded-full font-bold transition-all flex items-center gap-1.5 ${
+                  selectedType === 'Government Internship'
+                    ? 'bg-orange-600 text-white shadow-sm'
+                    : 'bg-orange-50 text-orange-800 border border-orange-200 hover:bg-orange-100'
+                }`}
+              >
+                <span>🇮🇳</span> Central Govt Free Internships (PMIS / AICTE)
+              </button>
+              <button
+                onClick={() => { setSelectedType('Internship'); setPage(1); }}
+                className={`text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all ${
+                  selectedType === 'Internship' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                💼 Industry Internships
+              </button>
+              <button
+                onClick={() => { setSelectedLocation('Remote'); setPage(1); }}
+                className={`text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all ${
+                  selectedLocation === 'Remote' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                🌐 Remote Only
+              </button>
+            </div>
+
             {/* Search and Filter Bar */}
-            <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-5">
+            <div className="mt-5 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-5">
               <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
@@ -105,15 +143,15 @@ export default function Home() {
                     type="text"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder="Search by job title, keyword, or company..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    placeholder="Search by job title, ministry, keyword, or company..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 font-medium placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   />
                 </div>
                 <button
                   type="submit"
                   className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition-colors shadow-sm shrink-0"
                 >
-                  Search Jobs
+                  Search Listings
                 </button>
               </form>
 
@@ -121,11 +159,11 @@ export default function Home() {
               <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 {/* Job Type Filter */}
                 <div>
-                  <label className="block text-gray-500 font-medium mb-1">Job Type</label>
+                  <label className="block text-gray-700 font-semibold mb-1">Opportunity Type</label>
                   <select
                     value={selectedType}
                     onChange={e => { setSelectedType(e.target.value); setPage(1); }}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-2 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   >
                     <option value="">All Types</option>
                     {jobTypes.map(t => (
@@ -136,13 +174,14 @@ export default function Home() {
 
                 {/* Location Filter */}
                 <div>
-                  <label className="block text-gray-500 font-medium mb-1">Location</label>
+                  <label className="block text-gray-700 font-semibold mb-1">Location</label>
                   <select
                     value={selectedLocation}
                     onChange={e => { setSelectedLocation(e.target.value); setPage(1); }}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-2 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   >
                     <option value="">Any Location</option>
+                    <option value="Pan-India">Pan-India (Govt)</option>
                     <option value="Remote">Remote</option>
                     <option value="Hybrid">Hybrid</option>
                     <option value="On-site">On-site</option>
@@ -151,11 +190,11 @@ export default function Home() {
 
                 {/* Skill Filter */}
                 <div>
-                  <label className="block text-gray-500 font-medium mb-1">Skill</label>
+                  <label className="block text-gray-700 font-semibold mb-1">Skill</label>
                   <select
                     value={selectedSkill}
                     onChange={e => { setSelectedSkill(e.target.value); setPage(1); }}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-2 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   >
                     <option value="">All Skills</option>
                     {popularSkills.map(s => (
@@ -166,15 +205,16 @@ export default function Home() {
 
                 {/* Trust Score Filter */}
                 <div>
-                  <label className="block text-gray-500 font-medium mb-1">TrustScore</label>
+                  <label className="block text-gray-700 font-semibold mb-1">TrustScore</label>
                   <select
                     value={minTrustScore}
                     onChange={e => { setMinTrustScore(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-2.5 py-2 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
                   >
                     <option value="">All Approved (40+)</option>
                     <option value="75">75+ Highly Trusted</option>
                     <option value="85">85+ Premium Trust</option>
+                    <option value="100">100 (Govt Certified)</option>
                   </select>
                 </div>
               </div>

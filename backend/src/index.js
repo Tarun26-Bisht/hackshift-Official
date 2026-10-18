@@ -9,6 +9,7 @@ const jobsRouter = require('./routes/jobs');
 const companyRouter = require('./routes/company');
 const studentRouter = require('./routes/student');
 const adminRouter = require('./routes/admin');
+const coursesRouter = require('./routes/courses');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -60,6 +61,7 @@ app.use('/api/jobs', jobsRouter);
 app.use('/api/company', companyRouter);
 app.use('/api/student', studentRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/student/courses', coursesRouter);
 
 app.get('/health', (req, res) => {
   res.json({
