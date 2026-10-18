@@ -88,9 +88,9 @@ export default function SignupPage() {
               <>
                 <Field label="Company Name *" name="companyName" value={form.companyName} onChange={set} required />
                 <Field label="Company Website" name="companyWebsite" type="url" value={form.companyWebsite} onChange={set} placeholder="https://company.com" />
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700">Company Type</label>
-                  <select name="companyType" value={form.companyType} onChange={set} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-semibold text-gray-800">Company Type</label>
+                  <select name="companyType" value={form.companyType} onChange={set} className="border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 font-medium bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Select type</option>
                     <option value="startup">Startup</option>
                     <option value="mnc">MNC</option>
@@ -105,9 +105,9 @@ export default function SignupPage() {
               <>
                 <Field label="College Name" name="collegeName" value={form.collegeName} onChange={set} placeholder="e.g. IIT Delhi" />
                 <Field label="Course" name="course" value={form.course} onChange={set} placeholder="e.g. B.Tech CSE" />
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700">Year of Study</label>
-                  <select name="yearOfStudy" value={form.yearOfStudy} onChange={set} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-semibold text-gray-800">Year of Study</label>
+                  <select name="yearOfStudy" value={form.yearOfStudy} onChange={set} className="border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 font-medium bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Select year</option>
                     {['1st Year', '2nd Year', '3rd Year', '4th Year', 'Postgraduate'].map(y => (
                       <option key={y} value={y}>{y}</option>
@@ -117,11 +117,11 @@ export default function SignupPage() {
               </>
             )}
 
-            {error && <p className="text-red-600 text-sm">{error}</p>}
+            {error && <p className="text-red-600 text-sm font-medium">{error}</p>}
 
             <button
               type="submit" disabled={loading}
-              className="bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-sm"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
@@ -139,10 +139,10 @@ export default function SignupPage() {
 
 function Field({ label, name, value, onChange, required, type = 'text', placeholder }: any) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-semibold text-gray-800">{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        className="border border-gray-300 rounded-lg px-3.5 py-2 text-sm text-gray-900 font-medium placeholder:text-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
     </div>
   );
 }

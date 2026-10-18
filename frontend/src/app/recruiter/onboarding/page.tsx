@@ -337,20 +337,20 @@ function CompletenessBar({ score }: { score: number }) {
 
 function Field({ label, name, value, onChange, required, type = 'text', placeholder }: any) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-semibold text-gray-800">{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} required={required} placeholder={placeholder}
-        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        className="border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 font-medium placeholder:text-gray-400 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
     </div>
   );
 }
 
 function SelectField({ label, name, value, onChange, options }: any) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-semibold text-gray-800">{label}</label>
       <select name={name} value={value} onChange={onChange}
-        className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        className="border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 font-medium bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
         <option value="">Select...</option>
         {options.map((o: string) => <option key={o} value={o.toLowerCase()}>{o}</option>)}
       </select>

@@ -25,3 +25,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Universal high-contrast form controls: dark text, crisp borders, legible placeholders */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  color: #0f172a !important; /* slate-900 / dark text */
+  background-color: #ffffff !important;
+  border-color: #cbd5e1;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important; /* slate-500 clearly visible */
+  opacity: 1 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #2563eb !important;
+}

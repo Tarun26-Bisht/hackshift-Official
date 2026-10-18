@@ -10,6 +10,7 @@ const { analyzeWithComprehend, interpretComprehend } = require('../services/comp
 const CompanyProfile = require('../models/CompanyProfile');
 const Job = require('../models/Job');
 const { sendJobApproved, sendJobBlocked } = require('../services/email');
+const { getAllGovernmentInternships } = require('../services/governmentInternships');
 
 const recruiterGuard = [authenticate, requireRole('recruiter')];
 
@@ -174,10 +175,37 @@ router.post('/reaudit/:id', recruiterGuard, async (req, res) => {
   }
 });
 
-// ─── GET /listings (Search, Filter, Pagination) ──────────────────────────────
+// ─── GET /government-internships ─────────────────────────────────────────────
+router.get('/government-internships', (req, res) => {
+  try {
+    const internships = getAllGovernmentInternships(req.query);
+    res.json({
+      success: true,
+      total: internships.length,
+      internships,
+      portalGuarantees: {
+        zeroFee: true,
+        directGovernmentPortal: true,
+        verifiedStipend: true,
+        trustScore: 100,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /listings (Search, Filter, Pagination + Govt Internships) ─────────────
 router.get('/listings', async (req, res) => {
   try {
-    const { search, skill, location, jobType, minScore, page, limit } = req.query;
+    const { search, skill, location, jobType, minScore, isGovernment, page, limit } = req.query;
+
+    // Direct government internships request
+    if (isGovernment === 'true' || jobType === 'government' || jobType === 'Government Internship') {
+      const govListings = getAllGovernmentInternships({ search, skill });
+      return res.json(govListings);
+    }
+
     const filter = { status: 'approved' };
 
     if (search) {
@@ -200,17 +228,26 @@ router.get('/listings', async (req, res) => {
       filter.trustScore = { $gte: Number(minScore) };
     }
 
+    const govInternships = getAllGovernmentInternships({ search, skill });
+
     if (page || limit) {
       const pageNum = Math.max(1, Number(page) || 1);
       const limitNum = Math.max(1, Number(limit) || 9);
-      const total = await Job.countDocuments(filter);
+      const dbTotal = await Job.countDocuments(filter);
+      const total = dbTotal + govInternships.length;
+
       const jobs = await Job.find(filter)
         .sort({ createdAt: -1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum);
 
+      // Include government internships on first page if not filtered out
+      const combined = pageNum === 1 && !jobType
+        ? [...govInternships.slice(0, 3), ...jobs]
+        : jobs;
+
       return res.json({
-        jobs,
+        jobs: combined,
         total,
         page: pageNum,
         pages: Math.ceil(total / limitNum),
@@ -218,7 +255,9 @@ router.get('/listings', async (req, res) => {
     }
 
     const jobs = await Job.find(filter).sort({ createdAt: -1 });
-    res.json(jobs);
+    // Merge government listings at the top with company jobs
+    const combined = !jobType ? [...govInternships, ...jobs] : jobs;
+    res.json(combined);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

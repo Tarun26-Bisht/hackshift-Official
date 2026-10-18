@@ -31,6 +31,19 @@ export default function Navbar() {
           <Link href="/" className="hover:text-blue-600 transition-colors">Listings</Link>
           <Link href="/trends" className="hover:text-blue-600 transition-colors">Trends</Link>
 
+          {/* Courses visible for students and visiting guests */}
+          {(!user || user?.role === 'student') && (
+            <Link
+              href="/student/courses"
+              className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1.5 transition-all px-2.5 py-1 rounded-lg bg-blue-50/80 hover:bg-blue-100/70 border border-blue-200/60"
+            >
+              <span>🎓</span> Courses
+              <span className="text-[10px] bg-blue-600 text-white font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                Free
+              </span>
+            </Link>
+          )}
+
           {user?.role === 'admin' && (
             <Link
               href="/admin/dashboard"
@@ -110,6 +123,19 @@ export default function Navbar() {
           >
             Trends
           </Link>
+
+          {(!user || user?.role === 'student') && (
+            <Link
+              href="/student/courses"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between text-sm font-bold text-blue-600 py-1"
+            >
+              <span>🎓 Free Courses Hub</span>
+              <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">
+                Free Certified
+              </span>
+            </Link>
+          )}
 
           {user?.role === 'admin' && (
             <Link

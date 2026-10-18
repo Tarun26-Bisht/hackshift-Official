@@ -1,6 +1,6 @@
 # TrustBridge — Scam-Free Education & Job Platform
 
-## What We're BuildinG
+## What We're Building
 
 A platform where startups, companies, and HRs post jobs/internships.
 Every listing goes through an AI audit pipeline before students can see it.
