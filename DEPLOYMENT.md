@@ -1,4 +1,4 @@
-# TrustBridge — Deployment & Production Guide
+# trustbridge — Deployment & Production Guide
 
 This guide covers live production deployment for **TrustBridge**:
 1. **Backend** → Railway or AWS EC2
