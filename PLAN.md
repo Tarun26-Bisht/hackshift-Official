@@ -1,6 +1,6 @@
 # TrustBridge — Scam-Free Education & Job Platform
 
-## What We're Building
+## what we're building
 
 A platform where startups, companies, and HRs post jobs/internships.
 Every listing goes through an AI audit pipeline before students can see it.
@@ -11,10 +11,12 @@ Students also get skill gap insights and course recommendations based on trendin
 ## Core Features
 
 ### 1. Job/Internship Submission (Company/HR Side)
+
 - A form where employers fill in: title, company, description, skills, salary, duration, job type, location, contact email, and a link
 - On submit → hits `POST /api/jobs/audit`
 
 ### 2. AI Audit Pipeline (Backend)
+
 - **Google Gemini AI** analyzes the description for:
   - Skills extracted
   - Missing fields (salary, duration, job_type, location, contact_email)
@@ -35,14 +37,17 @@ Students also get skill gap insights and course recommendations based on trendin
   - Score < 40 OR scam detected → `blocked` 🚫
 
 ### 3. Job Listings Page (Student Side)
+
 - Shows only `approved` jobs in a card grid
 - Each card shows: title, company, trust score badge, skills, salary, duration, link
 
 ### 4. Skill Trends Dashboard
+
 - Tracks skills from all approved listings
 - Shows top 10 trending skills in the last 14 days (bar chart)
 
 ### 5. Course Recommendations
+
 - Based on top 3 trending skills
 - Shows free + paid courses (YouTube, Udemy, Coursera, LinkedIn Learning)
 
@@ -50,13 +55,13 @@ Students also get skill gap insights and course recommendations based on trendin
 
 ## Tech Stack
 
-| Layer | Tech |
-|---|---|
-| Frontend | Next.js 16, React 19, Tailwind CSS 4 |
-| Backend | Node.js, Express.js 5 |
-| AI | Google Gemini 1.5 Flash |
-| HTTP Client | Axios |
-| Storage | In-memory (hackathon scope) |
+| Layer       | Tech                                 |
+| ----------- | ------------------------------------ |
+| Frontend    | Next.js 16, React 19, Tailwind CSS 4 |
+| Backend     | Node.js, Express.js 5                |
+| AI          | Google Gemini 1.5 Flash              |
+| HTTP Client | Axios                                |
+| Storage     | In-memory (hackathon scope)          |
 
 ---
 
@@ -97,24 +102,29 @@ harkathon/
 ## Build Steps
 
 ### Step 1 — Backend `.env` setup
+
 - Create `backend/.env` with `GEMINI_API_KEY` and `PORT`
 
 ### Step 2 — Frontend Components
+
 - `Navbar.tsx` — nav with links to Home, Post a Job, Trends
 - `TrustBadge.tsx` — colored badge showing trust score
 - `JobCard.tsx` — card showing job details + trust badge
 - `CourseCard.tsx` — card showing course title, platform, price, link
 
 ### Step 3 — Job Submission Page (`/post-job`)
+
 - Form with all fields
 - Calls `POST /api/jobs/audit`
 - Shows audit result: trust score, AI findings, approved/blocked status
 
 ### Step 4 — Trends & Recommendations Page (`/trends`)
+
 - Fetches `GET /api/jobs/trends` → renders bar chart of top skills
 - Fetches `GET /api/jobs/recommendations` → renders course cards per skill
 
 ### Step 5 — Polish Home Page
+
 - Improve `page.tsx` to show trust score on each card
 - Add empty state and loading skeleton
 
@@ -122,27 +132,27 @@ harkathon/
 
 ## API Reference
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/jobs/audit` | Submit + audit a job listing |
-| GET | `/api/jobs/listings` | Get all approved listings |
-| GET | `/api/jobs/trends` | Get top 10 trending skills |
-| GET | `/api/jobs/recommendations` | Get courses for top 3 skills |
-| GET | `/health` | Health check |
+| Method | Endpoint                    | Description                  |
+| ------ | --------------------------- | ---------------------------- |
+| POST   | `/api/jobs/audit`           | Submit + audit a job listing |
+| GET    | `/api/jobs/listings`        | Get all approved listings    |
+| GET    | `/api/jobs/trends`          | Get top 10 trending skills   |
+| GET    | `/api/jobs/recommendations` | Get courses for top 3 skills |
+| GET    | `/health`                   | Health check                 |
 
 ---
 
 ## TrustScore Breakdown
 
-| Factor | Impact |
-|---|---|
+| Factor               | Impact        |
+| -------------------- | ------------- |
 | Professionalism (AI) | Up to +30 pts |
-| Missing fields | -10 pts each |
-| Scam markers | -5 pts each |
-| isLikelyScam = true | -50 pts |
-| Broken link | -40 pts |
-| Generic email | -10 pts |
-| No email | -15 pts |
+| Missing fields       | -10 pts each  |
+| Scam markers         | -5 pts each   |
+| isLikelyScam = true  | -50 pts       |
+| Broken link          | -40 pts       |
+| Generic email        | -10 pts       |
+| No email             | -15 pts       |
 
 Score ≥ 40 → Approved ✅  
 Score < 40 or scam → Blocked 🚫
